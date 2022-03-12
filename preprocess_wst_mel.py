@@ -165,7 +165,7 @@ def wav2mel_npy(wav, sr=16000, \
     S = np.abs( \
             stft(pre_emphed_wav, n_fft=n_fft, hop_length=hop_size, win_length=win_size)
         ).T ** mag_pow
-    mel_S = np.dot(S, mel_basis(sr, n_fft, n_mels=n_mels, fmin=fmin, fmax=fmax).T)
+    mel_S = np.dot(S, mel_basis(sr=sr, n_fft=n_fft, n_mels=n_mels, fmin=fmin, fmax=fmax).T)
 
     # 3.3 convert magnitude spectrogram to dB-scaled units
     min_amp = np.power(10, spec_min_db/20)
