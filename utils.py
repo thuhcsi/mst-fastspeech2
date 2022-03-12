@@ -144,7 +144,7 @@ def get_gst(mels, model):
     for mel in mels:
         mel = torch.from_numpy(np.array([mel])).float().to(device)
         style_embedding = model.module.reference_encoder(mel)
-        gst = model.module.style_attention(style_embedding)
+        gst = model.module.style_attention(style_embedding, get_score=True)
         ret.append(gst.detach().cpu().numpy()[0])
     return np.array(ret)
 
@@ -155,7 +155,8 @@ def get_wst(wst_weights, wst_features, model):
         wst_feature = torch.from_numpy(np.array([wst_feature])).float().to(device)
         wst_style_embeddings = model.module.wst_encoder(wst_feature)
         word_style_tokens = torch.bmm(wst_weight, wst_style_embeddings)
-        word_style_tokens = model.module.wst_attention(word_style_tokens)
+        #print(word_style_tokens.shape)
+        word_style_tokens = model.module.wst_attention(word_style_tokens, get_score=True)
         #print(word_style_tokens.shape)
         ret.append(word_style_tokens.detach().cpu().numpy()[0])
     return ret

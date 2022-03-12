@@ -349,7 +349,7 @@ class StyleAttention(nn.Module):
         self.temperature = (self.output_size // self.n_head) ** 0.5
         nn.init.normal_(self.tokens)
 
-    def forward(self, inputs, token_id=None):
+    def forward(self, inputs, token_id=None, get_score=False):
         bs = inputs.size(0)
         q = self.q_linear(inputs.unsqueeze(1))
         k = self.k_linear(self.tanh(self.tokens).unsqueeze(0).expand(bs, -1, -1))
@@ -373,8 +373,10 @@ class StyleAttention(nn.Module):
         style_emb = style_emb.contiguous().view(self.n_head, bs, self.token_size)
         style_emb = style_emb.permute(1, 0, 2).contiguous().view(bs, -1)
 
-        return style_emb
-
+        if get_score:
+            return scores.permute(1, 0, 2).contiguous().view(bs, -1)
+        else:
+            return style_emb
 
 class Conv2d(nn.Module):
     """
@@ -498,7 +500,7 @@ class WSTAttention(nn.Module):
         self.temperature = (self.output_size // self.n_head) ** 0.5
         nn.init.normal_(self.tokens)
 
-    def forward(self, inputs, token_id=None):
+    def forward(self, inputs, token_id=None, get_score=False):
         bs = inputs.size(0)
         q = self.q_linear(inputs)
         k = self.k_linear(self.tanh(self.tokens).unsqueeze(0).expand(bs, -1, -1))
@@ -526,4 +528,7 @@ class WSTAttention(nn.Module):
         #print("SHAPE OF style_emb:{}".format(style_emb.shape))
         style_emb = style_emb.permute(1, 2, 0, 3).contiguous().view(bs, word_num, -1)
         #print("SHAPE OF style_emb:{}".format(style_emb.shape))
-        return style_emb
+        if get_score:
+            return scores.permute(1, 0, 2).contiguous().view(bs, word_num, -1)
+        else:
+            return style_emb
