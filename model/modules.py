@@ -144,9 +144,9 @@ class LengthRegulator(nn.Module):
             mel_len.append(expanded.shape[0])
 
         if max_len is not None:
-            print("!!!!!!!!!!!!!!!!")
-            print(len(output))
-            print(max_len)
+            #print("!!!!!!!!!!!!!!!!")
+            #print(len(output))
+            #print(max_len)
             output = utils.pad(output, max_len)
         else:
             output = utils.pad(output)

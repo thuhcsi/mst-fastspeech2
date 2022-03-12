@@ -166,7 +166,7 @@ class FastSpeech2(nn.Module):
 
                 phone_style_tokens, phone_len = x = self.word_to_phone(word_style_tokens, word2phone, max_phones)
                 # B * N_phones * 256
-                print("~~~~~~~~", "shape of phone_style_tokens is {}".format(phone_style_tokens.shape))
+                #print("~~~~~~~~", "shape of phone_style_tokens is {}".format(phone_style_tokens.shape))
 
             encoder_output = encoder_output + self.wst_proj(phone_style_tokens)
 

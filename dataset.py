@@ -144,7 +144,7 @@ class Dataset(Dataset):
                     "wst_weight" : wst_weight,
                     "word2phone" : word2phone
                 }
-                print("ONE SAMPLE")
+                #print("ONE SAMPLE")
                 break
             except:
                 idx = (idx + 1) % self.__len__()
