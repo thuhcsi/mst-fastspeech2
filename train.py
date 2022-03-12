@@ -296,7 +296,7 @@ def main(args):
                     energy = energy[0, :src_length].detach().cpu().numpy()
                     f0_output = f0_output[0, :src_length].detach().cpu().numpy()
                     energy_output = energy_output[0, :src_length].detach().cpu().numpy()
-                    duration = D[0, :src_length].detach().cpu().numpy().astype(np.int)
+                    duration = D[0, :src_length].detach().cpu().numpy().astype(int)
 
                     plot_mel(
                         [
