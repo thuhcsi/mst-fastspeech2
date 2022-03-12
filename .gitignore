@@ -116,3 +116,4 @@ preprocessed_data/
 log/
 synth/
 raw_data/
+*.sw*
