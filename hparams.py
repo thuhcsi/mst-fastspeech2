@@ -1,7 +1,7 @@
 import os
 
 #other
-run_name = 'wst_notenhanced2'
+run_name = 'mst_128'
 use_wst = True
 
 #WST
@@ -75,7 +75,7 @@ n_bins = 256
 
 
 # Optimizer
-batch_size = 16
+batch_size = 32
 epochs = 5000
 n_warm_up_step = 4000
 grad_clip_thresh = 1.0
