@@ -109,22 +109,23 @@ class Dataset(Dataset):
                     )
                     word2phone = np.load(word2phone_path)
                     
-                    bert_tgt_map_path = os.path.join(
-                        hp.preprocessed_path,
-                        "bt_map",
-                        "{}.npy".format(basename),
-                    )
-                    bert_tgt_map = np.load(bert_tgt_map_path)
+                    #bert_tgt_map_path = os.path.join(
+                    #    hp.preprocessed_path,
+                    #    "bt_map",
+                    #    "{}.npy".format(basename),
+                    #)
+                    #bert_tgt_map = np.load(bert_tgt_map_path)
+                    bert_tgt_map = np.arange(wst_weight.shape[0])
                     
                     if wst_weight.shape[0] != word2phone.shape[0]:
-                        # print(basename)
+                        print(basename)
                         # print("~~~~~~~testing~~~~~~~~~")
-                        # print(wst_weight.shape, word2phone.shape)
-                        new_wst_weight = np.zeros([word2phone.shape[0], wst_weight.shape[1]])
+                        print('wrong wst, word2phone shape:', wst_weight.shape, word2phone.shape)
+                        #new_wst_weight = np.zeros([word2phone.shape[0], wst_weight.shape[1]])
                         # print(bert_tgt_map)
-                        for tmp in range(len(bert_tgt_map)):
-                            new_wst_weight[bert_tgt_map[tmp]] += wst_weight[tmp]
-                        wst_weight = new_wst_weight
+                        #for tmp in range(len(bert_tgt_map)):
+                        #    new_wst_weight[bert_tgt_map[tmp]] += wst_weight[tmp]
+                        #wst_weight = new_wst_weight
                         # print(wst_weight.shape, word2phone.shape)
                         # print("~~~~~~~~~end~~~~~~~~~~~~~")
                 else:

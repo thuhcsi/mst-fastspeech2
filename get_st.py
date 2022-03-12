@@ -49,21 +49,18 @@ if __name__ == "__main__":
 
     model = get_FastSpeech2(args.step).to(device)
 
-    for filename in tqdm(os.listdir(mel_path)[:10]):
+    for filename in tqdm(os.listdir(mel_path)):
         names.append(filename)
         reference_mels.append(np.load(os.path.join(mel_path, filename)))
 
     gsts = utils.get_gst(reference_mels, model)
-    
     print(gsts.shape)
 
     os.makedirs('./preprocessed_data/ECC/gst/', exist_ok=True)
     os.makedirs('./preprocessed_data/ECC/wst/', exist_ok=True)
-    
 
     for i in tqdm(range(len(names))):
         np.save('./preprocessed_data/ECC/gst/'+names[i][8:], gsts[i], allow_pickle=False)
-
 
     wst_features = []
     wst_weights = []
@@ -75,7 +72,11 @@ if __name__ == "__main__":
             "wst_feature",
             "{}.npy".format(basename),
         )
-        wst_feature = np.load(wst_feature_path)
+        try:
+            wst_feature = np.load(wst_feature_path)
+        except:
+            print(wst_feature_path)
+            continue
 
         wst_weight_path = os.path.join(
             hp.preprocessed_path,
@@ -98,22 +99,20 @@ if __name__ == "__main__":
         )
         word2phone = np.load(word2phone_path)
         
-        bert_tgt_map_path = os.path.join(
-            hp.preprocessed_path,
-            "bt_map",
-            "{}.npy".format(basename),
-        )
-        bert_tgt_map = np.load(bert_tgt_map_path)
+        #bert_tgt_map_path = os.path.join(
+        #    hp.preprocessed_path,
+        #    "bt_map",
+        #    "{}.npy".format(basename),
+        #)
+        #bert_tgt_map = np.load(bert_tgt_map_path)
         
         if wst_weight.shape[0] != word2phone.shape[0]:
-            # print(basename)
-            # print("~~~~~~~testing~~~~~~~~~")
-            # print(wst_weight.shape, word2phone.shape)
-            new_wst_weight = np.zeros([word2phone.shape[0], wst_weight.shape[1]])
+            print('wrong wst_weight shape', basename, wst_weight.shape, word2phone.shape)
+            #new_wst_weight = np.zeros([word2phone.shape[0], wst_weight.shape[1]])
             # print(bert_tgt_map)
-            for tmp in range(len(bert_tgt_map)):
-                new_wst_weight[bert_tgt_map[tmp]] += wst_weight[tmp]
-            wst_weight = new_wst_weight
+            #for tmp in range(len(bert_tgt_map)):
+            #    new_wst_weight[bert_tgt_map[tmp]] += wst_weight[tmp]
+            #wst_weight = new_wst_weight
             # print(wst_weight.shape, word2phone.shape)
             # print("~~~~~~~~~end~~~~~~~~~~~~~")
 
@@ -125,4 +124,3 @@ if __name__ == "__main__":
     
     for i in tqdm(range(len(names))):
         np.save('./preprocessed_data/ECC/wst/'+names[i][8:], wsts[i], allow_pickle=False)
-        
