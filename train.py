@@ -107,7 +107,8 @@ def main(args):
                     + epoch * len(loader) * hp.batch_size
                     + 1
                 )
-                print("step {}".format(current_step))
+                if current_step % 100 == 0:
+                    print("step {}".format(current_step))
                 # Get Data
                 id_ = data_of_batch["id"]
                 text = torch.from_numpy(data_of_batch["text"]).long().to(device)
