@@ -195,9 +195,9 @@ def wav2mel_config(wavpath, config_path):
     return wav2mel(wavpath, **hparams)
 
 if __name__ == '__main__':
-    TPATH = '/ceph/home/petron/english-conversation-corpus/segmented/'
-    config_path = '/ceph/home/wxc20/tmpmy/mel_extractor/config16k.json'
-    PATH = '/ceph/home/wxc20/tmpmy/conversation-mm2022/preprocessed_data/ECC/wst_feature/'
+    TPATH = os.path.expanduser('~/mm2022-conversational-tts/segmented/')
+    config_path = 'preprocess_wst_mel.json'
+    PATH = 'preprocessed_data/ECC/wst_feature/'
     with open(config_path, 'r') as f:
         hparams = json.load(f)
     
