@@ -349,25 +349,29 @@ class StyleAttention(nn.Module):
         self.temperature = (self.output_size // self.n_head) ** 0.5
         nn.init.normal_(self.tokens)
 
-    def forward(self, inputs, token_id=None, get_score=False):
+    def forward(self, inputs, token_id=None, get_score=False, set_score=False):
         bs = inputs.size(0)
-        q = self.q_linear(inputs.unsqueeze(1))
-        k = self.k_linear(self.tanh(self.tokens).unsqueeze(0).expand(bs, -1, -1))
         v = self.v_linear(self.tanh(self.tokens).unsqueeze(0).expand(bs, -1, -1))
-
-        q = q.view(bs, q.shape[1], self.n_head, self.token_size)
-        k = k.view(bs, k.shape[1], self.n_head, self.token_size)
         v = v.view(bs, v.shape[1], self.n_head, self.token_size)
-
-        q = q.permute(2, 0, 1, 3).contiguous().view(-1, q.shape[1], q.shape[3])
-        k = k.permute(2, 0, 3, 1).contiguous().view(-1, k.shape[3], k.shape[1])
         v = v.permute(2, 0, 1, 3).contiguous().view(-1, v.shape[1], v.shape[3])
 
-        scores = torch.bmm(q, k) / self.temperature
-        scores = self.softmax(scores)
-        if token_id is not None:
-            scores = torch.zeros_like(scores)
-            scores[:, :, token_id] = 1
+        if not set_score:
+            q = self.q_linear(inputs.unsqueeze(1))
+            k = self.k_linear(self.tanh(self.tokens).unsqueeze(0).expand(bs, -1, -1))
+
+            q = q.view(bs, q.shape[1], self.n_head, self.token_size)
+            k = k.view(bs, k.shape[1], self.n_head, self.token_size)
+
+            q = q.permute(2, 0, 1, 3).contiguous().view(-1, q.shape[1], q.shape[3])
+            k = k.permute(2, 0, 3, 1).contiguous().view(-1, k.shape[3], k.shape[1])
+
+            scores = torch.bmm(q, k) / self.temperature
+            scores = self.softmax(scores)
+            if token_id is not None:
+                scores = torch.zeros_like(scores)
+                scores[:, :, token_id] = 1
+        else:
+            scores = inputs.view(bs, -1, self.n_token).permute(1, 0, 2).contiguous()
 
         style_emb = torch.bmm(scores, v).squeeze(1)
         style_emb = style_emb.contiguous().view(self.n_head, bs, self.token_size)
@@ -500,26 +504,31 @@ class WSTAttention(nn.Module):
         self.temperature = (self.output_size // self.n_head) ** 0.5
         nn.init.normal_(self.tokens)
 
-    def forward(self, inputs, token_id=None, get_score=False):
+    def forward(self, inputs, token_id=None, get_score=False, set_score=False):
         bs = inputs.size(0)
-        q = self.q_linear(inputs)
-        k = self.k_linear(self.tanh(self.tokens).unsqueeze(0).expand(bs, -1, -1))
         v = self.v_linear(self.tanh(self.tokens).unsqueeze(0).expand(bs, -1, -1))
-
-        q = q.view(bs, q.shape[1], self.n_head, self.token_size)
-        k = k.view(bs, k.shape[1], self.n_head, self.token_size)
         v = v.view(bs, v.shape[1], self.n_head, self.token_size)
-        #print("0 q.shape is {}".format(q.shape))
-        q = q.permute(2, 0, 1, 3).contiguous().view(-1, q.shape[1], q.shape[3])
-        k = k.permute(2, 0, 3, 1).contiguous().view(-1, k.shape[3], k.shape[1])
         v = v.permute(2, 0, 1, 3).contiguous().view(-1, v.shape[1], v.shape[3])
-        #print("1 q.shape is {}".format(q.shape))
-        scores = torch.bmm(q, k) / self.temperature
-        #print("SHAPE OF SCORES:{}".format(scores.shape))
-        scores = self.softmax(scores)
-        if token_id is not None:
-            scores = torch.zeros_like(scores)
-            scores[:, :, token_id] = 1
+
+        if not set_score:
+            q = self.q_linear(inputs)
+            k = self.k_linear(self.tanh(self.tokens).unsqueeze(0).expand(bs, -1, -1))
+
+            q = q.view(bs, q.shape[1], self.n_head, self.token_size)
+            k = k.view(bs, k.shape[1], self.n_head, self.token_size)
+            #print("0 q.shape is {}".format(q.shape))
+            q = q.permute(2, 0, 1, 3).contiguous().view(-1, q.shape[1], q.shape[3])
+            k = k.permute(2, 0, 3, 1).contiguous().view(-1, k.shape[3], k.shape[1])
+            #print("1 q.shape is {}".format(q.shape))
+            scores = torch.bmm(q, k) / self.temperature
+            #print("SHAPE OF SCORES:{}".format(scores.shape))
+            scores = self.softmax(scores)
+            if token_id is not None:
+                scores = torch.zeros_like(scores)
+                scores[:, :, token_id] = 1
+        else:
+            scores = inputs.view(bs, -1, self.n_head, self.n_token).permute(2, 0, 1, 3)
+            scores = scores.contiguous().view(-1, scores.shape[2], self.n_token)
 
         style_emb = torch.bmm(scores, v)
         #print("SHAPE OF style_emb:{}".format(style_emb.shape))
@@ -529,6 +538,6 @@ class WSTAttention(nn.Module):
         style_emb = style_emb.permute(1, 2, 0, 3).contiguous().view(bs, word_num, -1)
         #print("SHAPE OF style_emb:{}".format(style_emb.shape))
         if get_score:
-            return scores.permute(1, 0, 2).contiguous().view(bs, word_num, -1)
+            return scores.view(self.n_head, bs, word_num, self.n_token).permute(1, 2, 0, 3).contiguous().view(bs, word_num, -1)
         else:
             return style_emb

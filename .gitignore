@@ -117,3 +117,4 @@ log/
 synth/
 raw_data/
 *.sw*
+results/

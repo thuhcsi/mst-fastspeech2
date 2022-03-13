@@ -148,25 +148,25 @@ class FastSpeech2(nn.Module):
                 style_embedding = self.reference_encoder(mel_target)
                 #print(style_embedding.shape)
                 gst = self.style_attention(style_embedding)
+            else:
+                gst = self.style_attention(gst, set_score=True)
 
             encoder_output = encoder_output + self.gst_proj(gst).unsqueeze(1).expand(
                 -1, max_src_len, -1
             )
-        
         if use_wst:
             if wst is None:
                 wst_style_embeddings = self.wst_encoder(wst_feature)
                 # B * T * 256
-                
                 word_style_tokens = torch.bmm(wst_weight, wst_style_embeddings)
                 # B * N_words * 256
-                max_phones = torch.sum(word2phone, dim=1).max()
-                
                 word_style_tokens = self.wst_attention(word_style_tokens)
-
-                phone_style_tokens, phone_len = x = self.word_to_phone(word_style_tokens, word2phone, max_phones)
-                # B * N_phones * 256
-                #print("~~~~~~~~", "shape of phone_style_tokens is {}".format(phone_style_tokens.shape))
+            else:
+                word_style_tokens = self.wst_attention(wst, set_score=True)
+            max_phones = torch.sum(word2phone, dim=1).max()
+            phone_style_tokens, phone_len = x = self.word_to_phone(word_style_tokens, word2phone, max_phones)
+            # B * N_phones * 256
+            #print("~~~~~~~~", "shape of phone_style_tokens is {}".format(phone_style_tokens.shape))
 
             encoder_output = encoder_output + self.wst_proj(phone_style_tokens)
 

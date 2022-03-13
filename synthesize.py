@@ -3,11 +3,11 @@ import os
 import re
 import time
 from string import punctuation
+from tqdm import tqdm
 
 import torch
 import torch.nn as nn
 import numpy as np
-from pypinyin import pinyin, Style
 
 import utils
 import hparams as hp
@@ -56,21 +56,27 @@ def synthesize(
 
     if not os.path.exists(hp.test_path):
             os.makedirs(hp.test_path)
-    for i in range(len(phones)):
+    for i in tqdm(range(len(phones))):
         phone = phones[i]
-        phone = torch.from_numpy(text_to_phone(phone)).long().to(device).unsqueeze(0)
+        phone = torch.from_numpy(phone).long().to(device).unsqueeze(0)
         src_len = torch.tensor(phone.shape[1]).long().to(device).unsqueeze(0)
         id_ = file_ids[i]
         x_vec = np.load(os.path.join(hp.preprocessed_path, 'x_vec', id_+'.speaker.npy'))
-        x_vec = torch.from_numpy(xvec).to(device).unsqueeze(0)
+        x_vec = torch.from_numpy(x_vec).float().to(device).unsqueeze(0)
         wst = None
         word2phone = None
         if use_gst:
-            gst = np.load(os.path.join(gst_path, id_+'.npy'))
-            gst = torch.from_numpy(gst).to(device).unsqueeze(0)
+            try:
+                gst = np.load(os.path.join(gst_path, id_+'.npy'))
+            except:
+                continue
+            gst = torch.from_numpy(gst).float().to(device).unsqueeze(0)
         if use_wst:
-            wst = np.load(os.path.join(wst_path, id_+'.npy'))
-            wst = torch.from_numpy(wst).to(device).unsqueeze(0))
+            try:
+                wst = np.load(os.path.join(wst_path, id_+'.npy'))
+            except:
+                continue
+            wst = torch.from_numpy(wst).float().to(device).unsqueeze(0)
 
             word2phone = np.load(os.path.join(hp.preprocessed_path, 'w2p', id_+'.npy'))
             word2phone = torch.from_numpy(word2phone).to(device).unsqueeze(0)
@@ -88,7 +94,7 @@ def synthesize(
         ) = model(
             phone,
             src_len,
-            max_src_len=phones.shape[1],
+            max_src_len=phone.shape[1],
             x_vec=x_vec,
             use_gst=use_gst,
             use_wst=use_wst,
@@ -108,13 +114,12 @@ if __name__ == "__main__":
     # Test
     parser = argparse.ArgumentParser()
     parser.add_argument("--step", type=int, default=500000)
-    parser.add_argument("--source", type=str, default=hp.preprocessed_path+'eval.txt')
-    parser.add_argument("--x_vec", action="store_true", default=True)
+    parser.add_argument("--source", type=str, default=hp.preprocessed_path+'/eval.txt')
     parser.add_argument("--gst", action="store_true")
     parser.add_argument("--wst", action="store_true")
-    parser.add_argument("--gst_path", type=str)
-    parser.add_argument("--wst_path", type=str)
-    
+    parser.add_argument("--gst_path", type=str, default=hp.preprocessed_path+'/p_gst')
+    parser.add_argument("--wst_path", type=str, default=hp.preprocessed_path+'/p_wst')
+
     args = parser.parse_args()
 
     file_ids, phones = read_source(args.source)
