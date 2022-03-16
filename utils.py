@@ -40,7 +40,7 @@ def vocoder_infer(mels, vocoder, paths, lengths=None):
             wavfile.write(path, hp.sampling_rate, wav[:length])
         else:
             wavfile.write(path, hp.sampling_rate, wav)
-
+            np.save(path[:-3]+'npy', mels[i].cpu().numpy())
 
 def get_vocoder():
     vocoder = torch.hub.load(
