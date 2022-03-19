@@ -91,6 +91,7 @@ def synthesize(
             src_mask,
             mel_mask,
             mel_len,
+            p_x_vec
         ) = model(
             phone,
             src_len,

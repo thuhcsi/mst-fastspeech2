@@ -10,6 +10,7 @@ from transformer.Models import Encoder, Decoder
 from transformer.Layers import PostNet
 from utils import get_mask_from_lengths
 from .modules import VarianceAdaptor, ReferenceEncoder, StyleAttention, WSTEncoder, WSTAttention, LengthRegulator
+from .grl import AdversarialPredictor
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -76,6 +77,8 @@ class FastSpeech2(nn.Module):
             )
         )
 
+        self.adversarial_predictor = AdversarialPredictor(hp.encoder_hidden, hp.x_vec_size)
+
         self.word_to_phone = LengthRegulator()
         self.wst_proj = nn.Sequential(
             OrderedDict(
@@ -138,11 +141,6 @@ class FastSpeech2(nn.Module):
 
         encoder_output = self.encoder(src_seq, src_mask)
 
-        if x_vec is not None:
-            encoder_output = encoder_output + self.x_vec_proj(x_vec).unsqueeze(
-                1
-            ).expand(-1, max_src_len, -1)
-
         if use_gst:
             if gst is None:
                 style_embedding = self.reference_encoder(mel_target)
@@ -169,6 +167,13 @@ class FastSpeech2(nn.Module):
             #print("~~~~~~~~", "shape of phone_style_tokens is {}".format(phone_style_tokens.shape))
 
             encoder_output = encoder_output + self.wst_proj(phone_style_tokens)
+
+        p_x_vec = self.adversarial_predictor(encoder_output)
+
+        if x_vec is not None:
+            encoder_output = encoder_output + self.x_vec_proj(x_vec).unsqueeze(
+                1
+            ).expand(-1, max_src_len, -1)
 
         if d_target is not None:
             (
@@ -222,4 +227,5 @@ class FastSpeech2(nn.Module):
             src_mask,
             mel_mask,
             mel_len,
+            p_x_vec
         )

@@ -139,6 +139,7 @@ def main(args):
                     src_mask,
                     mel_mask,
                     _,
+                    p_x_vec
                 ) = model(
                     text,
                     src_len,
@@ -158,7 +159,7 @@ def main(args):
                 )
 
                 # Cal Loss
-                mel_loss, mel_postnet_loss, d_loss, f_loss, e_loss = Loss(
+                mel_loss, mel_postnet_loss, d_loss, f_loss, e_loss, speaker_loss = Loss(
                     log_duration_output,
                     log_D,
                     f0_output,
@@ -170,8 +171,10 @@ def main(args):
                     mel_target,
                     ~src_mask,
                     ~mel_mask,
+                    x_vec,
+                    p_x_vec
                 )
-                total_loss = mel_loss + mel_postnet_loss + d_loss + f_loss + e_loss
+                total_loss = mel_loss + mel_postnet_loss + d_loss + f_loss + e_loss + speaker_loss
 
                 # Logger
                 t_l = total_loss.item()
