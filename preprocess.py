@@ -25,7 +25,6 @@ def main():
     energy_out_dir = os.path.join(out_dir, "energy")
     if not os.path.exists(energy_out_dir):
         os.makedirs(energy_out_dir, exist_ok=True)
-    #缺
 
     train = build_from_path(in_dir, out_dir)
     write_metadata(train, out_dir)

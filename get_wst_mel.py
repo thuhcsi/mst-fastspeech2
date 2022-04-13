@@ -82,7 +82,7 @@ def get_word2phone(text, phone_list):
 
 
 if __name__ == "__main__":
-    PATH = '/ceph/home/wxc20/tmpmy/conversation-mm2022/preprocessed_data/ECC/'
+    PATH = 'ECC_PATH'
     with open(PATH + 'trains.txt') as f:
         lines = f.readlines()
         for line in lines:
