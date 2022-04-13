@@ -25,7 +25,9 @@ class FastSpeech2Loss(nn.Module):
         src_mask,
         mel_mask,
         x_vec,
-        p_x_vec
+        p_x_vec,
+        bert,
+        p_bert
     ):
         log_d_target.requires_grad = False
         p_target.requires_grad = False
@@ -51,5 +53,9 @@ class FastSpeech2Loss(nn.Module):
         e_loss = self.mse_loss(e_predicted, e_target)
         x_vec = torch.tile(x_vec.unsqueeze(1), (1, p_x_vec.shape[1], 1))
         speaker_loss = self.mse_loss(x_vec, p_x_vec)
+        if p_bert:
+            bert_loss = self.mse_loss(bert, p_bert)
+        else:
+            bert_loss = 0
 
-        return mel_loss, mel_postnet_loss, d_loss, p_loss, e_loss, speaker_loss
+        return mel_loss, mel_postnet_loss, d_loss, p_loss, e_loss, speaker_loss, bert_loss

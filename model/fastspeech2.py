@@ -78,6 +78,7 @@ class FastSpeech2(nn.Module):
         )
 
         self.adversarial_predictor = AdversarialPredictor(hp.encoder_hidden, hp.x_vec_size)
+        self.adversarial_predictor_bert = AdversarialPredictor(hp.wst_size, hp.bert_size)
 
         self.word_to_phone = LengthRegulator()
         self.wst_proj = nn.Sequential(
@@ -161,12 +162,15 @@ class FastSpeech2(nn.Module):
                 word_style_tokens = self.wst_attention(word_style_tokens)
             else:
                 word_style_tokens = self.wst_attention(wst, set_score=True)
+            p_bert = self.adversarial_predictor_bert(word_style_tokens)
             max_phones = torch.sum(word2phone, dim=1).max()
             phone_style_tokens, phone_len = x = self.word_to_phone(word_style_tokens, word2phone, max_phones)
             # B * N_phones * 256
             #print("~~~~~~~~", "shape of phone_style_tokens is {}".format(phone_style_tokens.shape))
 
             encoder_output = encoder_output + self.wst_proj(phone_style_tokens)
+        else:
+            p_bert = None
 
         p_x_vec = self.adversarial_predictor(encoder_output)
 
@@ -227,5 +231,6 @@ class FastSpeech2(nn.Module):
             src_mask,
             mel_mask,
             mel_len,
-            p_x_vec
+            p_x_vec,
+            p_bert
         )

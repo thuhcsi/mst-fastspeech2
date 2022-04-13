@@ -124,6 +124,7 @@ def main(args):
                 max_src_len = np.max(data_of_batch["src_len"]).astype(np.int32)
                 max_mel_len = np.max(data_of_batch["mel_len"]).astype(np.int32)
                 x_vec = torch.from_numpy(data_of_batch["x_vec"]).float().to(device)
+                bert = torch.from_numpy(data_of_batch["bert"]).float().to(device)
                 if args.wst:
                     wst_features = torch.from_numpy(data_of_batch["wst_feature"]).float().to(device)
                     word2phones = torch.from_numpy(data_of_batch["word2phone"]).long().to(device)
@@ -139,7 +140,8 @@ def main(args):
                     src_mask,
                     mel_mask,
                     _,
-                    p_x_vec
+                    p_x_vec,
+                    p_bert
                 ) = model(
                     text,
                     src_len,
@@ -159,7 +161,7 @@ def main(args):
                 )
 
                 # Cal Loss
-                mel_loss, mel_postnet_loss, d_loss, f_loss, e_loss, speaker_loss = Loss(
+                mel_loss, mel_postnet_loss, d_loss, f_loss, e_loss, speaker_loss, bert_loss = Loss(
                     log_duration_output,
                     log_D,
                     f0_output,
@@ -172,9 +174,11 @@ def main(args):
                     ~src_mask,
                     ~mel_mask,
                     x_vec,
-                    p_x_vec
+                    p_x_vec,
+                    bert,
+                    p_bert
                 )
-                total_loss = mel_loss + mel_postnet_loss + d_loss + f_loss + e_loss + speaker_loss
+                total_loss = mel_loss + mel_postnet_loss + d_loss + f_loss + e_loss + speaker_loss + bert_loss
 
                 # Logger
                 t_l = total_loss.item()

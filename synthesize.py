@@ -37,7 +37,14 @@ def get_FastSpeech2(step):
 
     speaker_num = len(utils.get_speaker_to_id())
     model = nn.DataParallel(FastSpeech2(speaker_num))
-    model.load_state_dict(torch.load(checkpoint_path)["model"])
+
+    model_dict = model.state_dict()
+    state_dict = torch.load(checkpoint_path)["model"]
+    state_dict = {k: v for k, v in state_dict.items() if not k.startswith('module.adversarial_.')}
+    model_dict.update(state_dict)
+    model.load_state_dict(model_dict)
+
+    #model.load_state_dict(torch.load(checkpoint_path)["model"])
     model.requires_grad = False
     model.eval()
     return model
@@ -63,6 +70,7 @@ def synthesize(
         id_ = file_ids[i]
         x_vec = np.load(os.path.join(hp.preprocessed_path, 'x_vec', id_+'.speaker.npy'))
         x_vec = torch.from_numpy(x_vec).float().to(device).unsqueeze(0)
+        gst = None
         wst = None
         word2phone = None
         if use_gst:
@@ -91,7 +99,8 @@ def synthesize(
             src_mask,
             mel_mask,
             mel_len,
-            p_x_vec
+            p_x_vec,
+            p_bert
         ) = model(
             phone,
             src_len,

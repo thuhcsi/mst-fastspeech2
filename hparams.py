@@ -1,8 +1,9 @@
 import os
 
 #other
-run_name = 'mst_128'
+run_name = 'mst'
 use_wst = True
+bert_size = 768
 
 #WST
 wst_ref_filters = [32, 32, 64, 64, 128, 128]

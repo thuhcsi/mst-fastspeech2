@@ -73,13 +73,13 @@ class Dataset(Dataset):
                 )
                 energy = np.load(energy_path)
 
-                x_vec_path = os.path.join(
-                    hp.preprocessed_path,
-                    "x_vec",
-                    "{}.speaker.npy".format(basename),
-                )
+                x_vec_path = os.path.join(hp.preprocessed_path, "x_vec", "{}.speaker.npy".format(basename))
                 x_vec = np.load(x_vec_path)
                 # print(x_vec.shape)
+
+                bert_path = os.path.join(hp.preprocessed_path, "bert", "{}.bert.npy".format(basename))
+                bert = np.load(bert_path)
+
                 if hp.use_wst:
                     wst_feature_path = os.path.join(
                         hp.preprocessed_path,
@@ -143,7 +143,8 @@ class Dataset(Dataset):
                     "x_vec": x_vec,
                     "wst_feature" : wst_feature,
                     "wst_weight" : wst_weight,
-                    "word2phone" : word2phone
+                    "word2phone" : word2phone,
+                    "bert" : bert,
                 }
                 #print("ONE SAMPLE")
                 break
@@ -175,6 +176,7 @@ class Dataset(Dataset):
         f0s = [batch[ind]["f0"] for ind in cut_list]
         energies = [batch[ind]["energy"] for ind in cut_list]
         x_vec = np.array([batch[ind]["x_vec"] for ind in cut_list])
+        bert = np.array([batch[ind]["bert"] for ind in cut_list])
         if hp.use_wst:
             word2phones = [batch[ind]["word2phone"] for ind in cut_list]
             wst_features = [batch[ind]["wst_feature"] for ind in cut_list]
@@ -201,6 +203,7 @@ class Dataset(Dataset):
 
         texts = pad_1D(texts)
         mel_targets = pad_2D(mel_targets)
+        bert = pad_2D(bert)
         Ds = pad_1D(Ds)
         f0s = pad_1D(f0s)
         energies = pad_1D(energies)
@@ -218,7 +221,8 @@ class Dataset(Dataset):
             "x_vec": x_vec,
             "wst_feature" : wst_features,
             "wst_weight" : wst_weights,
-            "word2phone" : word2phones
+            "word2phone" : word2phones,
+            "bert" : bert,
         }
 
         return out
