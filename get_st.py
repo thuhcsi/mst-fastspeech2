@@ -36,7 +36,7 @@ def get_FastSpeech2(step):
 if __name__ == "__main__":
     # Test
     parser = argparse.ArgumentParser()
-    parser.add_argument("--step", type=int, default=0)
+    parser.add_argument("--step", type=int, default=500000)
 
     args = parser.parse_args()
 
