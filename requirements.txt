@@ -1,7 +1,7 @@
 numpy == 1.19.0
 torch == 1.7.0
 tgt == 1.4.4
-scipy == 1.5.4
+scipy == 1.11.1
 pyworld == 0.2.10
 librosa == 0.7.2
 numba == 0.48.0
