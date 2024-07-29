@@ -1,5 +1,5 @@
 numpy == 1.19.0
-torch == 1.7.0
+torch == 2.2.0
 tgt == 1.4.4
 scipy == 1.11.1
 pyworld == 0.2.10
